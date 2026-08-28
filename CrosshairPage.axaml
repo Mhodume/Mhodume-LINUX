@@ -79,6 +79,11 @@
                                          Value="{Binding TiltFactor, Mode=TwoWay}" />
                 </StackPanel>
 
+                <!-- the speedometer block lives here, pointed at its own config
+                     section by SetSpeedContext (its DataContext cannot inherit
+                     the crosshair). -->
+                <local:SpeedPage x:Name="SpeedSection" />
+
             </StackPanel>
         </ScrollViewer>
 

@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Mhodume"
+        x:Class="Mhodume.InputsWindow"
+        x:CompileBindings="False"
+        Title="Inputs" Height="420" Width="1000"
+        MinHeight="320" MinWidth="640"
+        CanResize="True"
+        Background="{StaticResource Bg}"
+        Foreground="{StaticResource Text}"
+        WindowStartupLocation="CenterOwner">
+
+    <!-- TODO(linux): the WPF version drew its own borderless chrome
+         (WindowChrome + a titlebar row with an INPUTS brand and a close
+         button). Custom window chrome is platform-specific, so this follows
+         MainWindow and uses the standard window decorations instead. -->
+
+    <Border BorderBrush="{StaticResource Edge}" BorderThickness="1">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ============================= HEADER ============================ -->
+        <Border Grid.Row="0" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Edge}" BorderThickness="0,0,0,1"
+                Padding="14,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                    <TextBlock x:Name="RunTitle" Text="—" FontFamily="{StaticResource Mono}"
+                               FontSize="13"/>
+                    <TextBlock x:Name="RunDetail" Text="" Foreground="{StaticResource Muted}"
+                               FontSize="11" Margin="0,3,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="CAMERA" Classes="label"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <RadioButton x:Name="EyesRadio" GroupName="camera" Content="Their eyes"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,12,0" IsCheckedChanged="Eyes_Checked"/>
+                    <RadioButton x:Name="BehindRadio" GroupName="camera" Content="Behind"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,20,0" IsCheckedChanged="Behind_Checked"/>
+                    <Button x:Name="StopButton" Content="Stop" Margin="0,0,20,0"
+                            VerticalAlignment="Center" Click="Stop_Click"/>
+                    <TextBlock Text="ZOOM" Classes="label"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Slider x:Name="Zoom" Width="140" Minimum="8" Maximum="600" Value="60"
+                            VerticalAlignment="Center"
+                            ValueChanged="Zoom_Changed"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================ TIMELINE =========================== -->
+        <ScrollViewer Grid.Row="1" x:Name="Scroller"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="14,12,14,12">
+            <local:InputTimeline x:Name="Timeline" HorizontalAlignment="Left"/>
+        </ScrollViewer>
+
+        <!-- ============================= READOUT =========================== -->
+        <Border Grid.Row="2" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Edge}" BorderThickness="0,1,0,0"
+                Padding="14,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Two cells, because the left one changes on every mouse move
+                     and would wipe the answer to "did my click do anything". -->
+                <TextBlock Grid.Column="0" x:Name="Readout"
+                           FontFamily="{StaticResource Mono}" FontSize="12"
+                           Foreground="{StaticResource Muted}"
+                           Text="Point at the lanes to read a moment."/>
+                <TextBlock Grid.Column="1" x:Name="WatchState"
+                           FontFamily="{StaticResource Mono}" FontSize="12"
+                           Foreground="{StaticResource Accent}" Text=""/>
+            </Grid>
+        </Border>
+    </Grid>
+    </Border>
+</Window>

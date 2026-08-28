@@ -32,6 +32,12 @@ public partial class CrosshairPage : UserControl
     private CrosshairConfig? _config;
     private bool _settingShape;
 
+    /// <summary>
+    /// Points the embedded speed block at its own config section. The page's own
+    /// DataContext is the crosshair, so the block cannot inherit it.
+    /// </summary>
+    public void SetSpeedContext(SpeedConfig speed) => SpeedSection.DataContext = speed;
+
     public CrosshairPage()
     {
         InitializeComponent();
@@ -48,7 +54,6 @@ public partial class CrosshairPage : UserControl
         DataContextChanged += OnDataContextChanged;
     }
 
-    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {

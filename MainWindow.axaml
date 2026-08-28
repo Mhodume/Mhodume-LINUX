@@ -1,41 +1,133 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Mhodume"
-        x:Class="Mhodume.MainWindow"
-        Title="Mhodume" Width="900" Height="640"
-        MinWidth="760" MinHeight="520"
+        x:Class="Mhodume.MainWindow" x:CompileBindings="False"
+        Title="Mhodume" Width="960" Height="680"
+        MinWidth="820" MinHeight="560"
         Background="{StaticResource Bg}"
         Foreground="{StaticResource Text}"
-        FontFamily="{StaticResource Mono}">
+        FontFamily="Inter, Segoe UI, sans-serif">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="*,Auto" ColumnDefinitions="200,*">
 
-        <!-- ============================= HEADER ============================= -->
-        <Border Grid.Row="0" Background="{StaticResource Panel}"
-                BorderBrush="{StaticResource Edge}" BorderThickness="0,0,0,1"
-                Padding="16,10">
-            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <Border Background="{StaticResource Accent}" Padding="10,3">
-                    <TextBlock Text="MHODUME" FontWeight="Bold" FontSize="14"
-                               Foreground="{StaticResource BgColor}" />
+        <!-- ============================ NAV COLUMN ========================== -->
+        <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Edge}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="{StaticResource Accent}"
+                        Padding="14,10">
+                    <StackPanel Orientation="Horizontal" Spacing="9">
+                        <TextBlock Text="MHODUME" FontWeight="Bold" FontSize="14"
+                                   FontFamily="{StaticResource Mono}"
+                                   Foreground="{StaticResource BgColor}" />
+                        <TextBlock x:Name="VersionText" Text="" FontSize="11"
+                                   Foreground="{StaticResource BgColor}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
                 </Border>
-                <TextBlock Text="LINUX" Foreground="{StaticResource Muted}"
-                           FontSize="11" VerticalAlignment="Center" />
-            </StackPanel>
+
+                <ListBox x:Name="NavList" Background="Transparent" BorderThickness="0"
+                         SelectionChanged="NavList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Panel>
+                                <!-- group header row -->
+                                <TextBlock Text="{Binding Group}" IsVisible="{Binding IsHeader}"
+                                           Classes="label" Margin="4,12,0,2"
+                                           FontFamily="{StaticResource Mono}" />
+                                <!-- destination row -->
+                                <Grid IsVisible="{Binding !IsHeader}" ColumnDefinitions="Auto,*">
+                                    <TextBlock Grid.Column="0" Text="{Binding Number}"
+                                               FontFamily="{StaticResource Mono}" FontSize="11"
+                                               Foreground="{StaticResource Muted}"
+                                               Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                               FontSize="13" VerticalAlignment="Center" />
+                                </Grid>
+                            </Panel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Border>
 
-        <!-- ============================== BODY ============================= -->
-        <local:CrosshairPage Grid.Row="1" x:Name="Crosshair" />
+        <!-- ============================== CONTENT =========================== -->
+        <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="Auto,*">
 
-        <!-- ============================= STATUS ============================ -->
-        <Border Grid.Row="2" Background="{StaticResource Panel}"
-                BorderBrush="{StaticResource Edge}" BorderThickness="0,1,0,0"
-                Padding="16,8">
-            <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" x:Name="StatusText" FontSize="12"
-                           Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" x:Name="BridgeText" FontSize="12"
+            <!-- page header -->
+            <Border Grid.Row="0" Background="{StaticResource Panel}"
+                    BorderBrush="{StaticResource Edge}" BorderThickness="0,0,0,1"
+                    Padding="20,12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Column="0" x:Name="PageNumber" Text=""
+                               FontFamily="{StaticResource Mono}" FontSize="20"
+                               Foreground="{StaticResource Accent}" Margin="0,0,12,0"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="PageTitle" Text="" FontSize="16" FontWeight="Bold"
+                                   FontFamily="{StaticResource Mono}" />
+                        <TextBlock x:Name="PageNote" Text="" FontSize="11"
+                                   Foreground="{StaticResource Muted}" />
+                    </StackPanel>
+                    <Border Grid.Column="2" x:Name="TrainingNeeded" IsVisible="False"
+                            Background="{StaticResource WarnFill}" Padding="8,4"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="needs training mode" Classes="warn" FontSize="10" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- all pages, only the selected one shown -->
+            <Grid Grid.Row="1" x:Name="PageHost">
+                <local:CrosshairPage   x:Name="PageCrosshair" />
+                <local:HudPage         x:Name="PageHud"         IsVisible="False" />
+                <local:MapsPage        x:Name="PageMaps"        IsVisible="False" />
+                <local:CheckpointsPage x:Name="PageCheckpoints" IsVisible="False" />
+                <local:TrajectoryPage  x:Name="PageTrajectory"  IsVisible="False" />
+                <local:FreecamPage     x:Name="PageFreecam"     IsVisible="False" />
+                <local:TrainingPage    x:Name="PageTraining"    IsVisible="False" />
+                <local:TweaksPage      x:Name="PageTweaks"      IsVisible="False" />
+                <local:ProfilesPage    x:Name="PageProfiles"    IsVisible="False" />
+
+                <!-- About / files, inline (adapted for Linux) -->
+                <ScrollViewer x:Name="PageAbout" IsVisible="False">
+                    <StackPanel Margin="20" Spacing="14" MaxWidth="620"
+                                HorizontalAlignment="Left">
+                        <local:SectionHeader Text="FILES" First="True" />
+                        <TextBlock Classes="label" Text="CONFIG FOLDER" />
+                        <TextBlock x:Name="ConfigPathText" Classes="value" TextWrapping="Wrap" />
+                        <TextBlock x:Name="BridgeState" TextWrapping="Wrap" FontSize="12" />
+                        <Button x:Name="OpenFolderButton" Content="Open the config folder"
+                                HorizontalAlignment="Left" Click="OpenConfigFolder_Click" />
+
+                        <local:SectionHeader Text="MODE" />
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}"
+                                   FontSize="12"
+                                   Text="Switching the mod on or off (for timed runs) is done from the launcher, which restarts the game with or without the loader. This window only edits what the mod draws." />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- ============================= STATUS ============================= -->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                Background="{StaticResource Panel}" BorderBrush="{StaticResource Edge}"
+                BorderThickness="0,1,0,0" Padding="14,8">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusDot" Width="8" Height="8"
+                             Fill="{StaticResource Muted}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="StatusText" FontSize="12"
+                               Foreground="{StaticResource Muted}" />
+                </StackPanel>
+
+                <TextBlock Grid.Column="2" x:Name="GameStatus" FontSize="12"
+                           Foreground="{StaticResource Muted}" Margin="12,0"
                            VerticalAlignment="Center" />
+                <TextBlock Grid.Column="3" x:Name="LiveBadge" Text="● LIVE" FontSize="12"
+                           FontFamily="{StaticResource Mono}"
+                           Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
             </Grid>
         </Border>
     </Grid>

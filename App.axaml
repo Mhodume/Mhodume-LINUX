@@ -3,14 +3,11 @@
              x:Class="Mhodume.App"
              RequestedThemeVariant="Dark">
 
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
-
     <Application.Resources>
         <ResourceDictionary>
             <!-- Palette — carried over verbatim from the Windows app so the
-                 Linux build looks the same. -->
+                 Linux build wears the same low-poly brutalist look: near-black
+                 concrete with the one red from the game's wordmark. -->
             <Color x:Key="BgColor">#FF0B0C0F</Color>
             <Color x:Key="PanelColor">#FF14161B</Color>
             <Color x:Key="PanelAltColor">#FF1C1F26</Color>
@@ -28,31 +25,144 @@
             <SolidColorBrush x:Key="Edge"      Color="#FF3D4450" />
             <SolidColorBrush x:Key="Selected"  Color="#22FF4A1E" />
             <SolidColorBrush x:Key="AccentDim" Color="#99FF4A1E" />
+            <SolidColorBrush x:Key="Ok"         Color="#FFE8EBF0" />
+            <SolidColorBrush x:Key="Notice"     Color="#FFFF4A1E" />
+            <SolidColorBrush x:Key="NoticeFill" Color="#22FF4A1E" />
+            <SolidColorBrush x:Key="Warn"       Color="#FFFFC400" />
+            <SolidColorBrush x:Key="WarnFill"   Color="#22FFC400" />
+            <SolidColorBrush x:Key="WarnText"   Color="#FFFFDD8A" />
 
             <FontFamily x:Key="Mono">Cascadia Code, Consolas, DejaVu Sans Mono, monospace</FontFamily>
+
+            <!-- The four gaps the whole app is built on. -->
+            <Thickness x:Key="GapLabel">0,0,0,8</Thickness>
+            <Thickness x:Key="GapRow">0,12,0,0</Thickness>
+            <Thickness x:Key="GapSection">0,32,0,0</Thickness>
+
+            <!-- Feed the app's red into Fluent so stock controls — sliders,
+                 check boxes, combo highlights — pick it up on their own instead
+                 of every one being re-templated. -->
+            <Color x:Key="SystemAccentColor">#FFFF4A1E</Color>
+            <Color x:Key="SystemAccentColorDark1">#FFE53E14</Color>
+            <Color x:Key="SystemAccentColorDark2">#FFCC340F</Color>
+            <Color x:Key="SystemAccentColorDark3">#FFB32A0A</Color>
+            <Color x:Key="SystemAccentColorLight1">#FFFF6238</Color>
+            <Color x:Key="SystemAccentColorLight2">#FFFF7A55</Color>
+            <Color x:Key="SystemAccentColorLight3">#FFFF9272</Color>
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
-        <!-- A flat, dark button that matches the app's slabs. -->
-        <Style Selector="Button.mode">
+        <FluentTheme />
+
+        <!-- Base text tone. -->
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <!-- .label : a quiet caption above a control. -->
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <!-- .value / .valueText : a live number, monospace so digits do not
+             shift under a slider; valueText pins it to the right edge. -->
+        <Style Selector="TextBlock.value, TextBlock.valueText">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontFamily" Value="{StaticResource Mono}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="TextBlock.valueText">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <!-- .valueField : the box a live value sits in. -->
+        <Style Selector="Border.valueField">
+            <Setter Property="Background" Value="{StaticResource Bg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Edge}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="MinWidth" Value="62" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Drawer captions. -->
+        <Style Selector="TextBlock.drawerTitle">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontFamily" Value="{StaticResource Mono}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="TextBlock.drawerHint">
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0,3,0,0" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!-- Warnings / notices. -->
+        <Style Selector="TextBlock.warn">
+            <Setter Property="Foreground" Value="{StaticResource WarnText}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.notice">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!-- Flat, square buttons — panels you press, accent edge on hover. -->
+        <Style Selector="Button">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
             <Setter Property="Background" Value="{StaticResource PanelAlt}" />
             <Setter Property="BorderBrush" Value="{StaticResource Edge}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="Foreground" Value="{StaticResource Text}" />
-            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
-        <Style Selector="Button.mode:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Selected}" />
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Edge}" />
             <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="TextBlock.Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="TextBlock.Foreground" Value="{StaticResource Muted}" />
         </Style>
 
-        <!-- Section label: small, muted, spaced caps. -->
-        <Style Selector="TextBlock.label">
-            <Setter Property="Foreground" Value="{StaticResource Muted}" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="LetterSpacing" Value="1" />
+        <!-- A mode slab: the big pressable card on the launcher-style pages. -->
+        <Style Selector="Button.mode">
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+        </Style>
+
+        <!-- Dark, square inputs. -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource Bg}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Edge}" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{StaticResource Bg}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Edge}" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+
+        <!-- Checkboxes: keep Fluent's shape but square it and dim the label. -->
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
     </Application.Styles>
 </Application>

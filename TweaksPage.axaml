@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.TweaksPage"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,24">
+        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12"
+                       LineHeight="18"
+                       Text="Small changes to how the game behaves while you practise. None of these give an advantage, so they work without training mode."/>
+
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+                    <CheckBox IsChecked="{Binding StayOnLevel, Mode=TwoWay}"
+                              FontSize="13" FontWeight="SemiBold"
+                              Content="Stay on the level after finishing"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,6,0,0" LineHeight="17"
+                               Text="Normally the game sends you to the next level as soon as you cross the finish. With this on, you are brought straight back to the one you were working on, so you can run it again."/>
+                </StackPanel>
+            </Border>
+
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource WarnFill}" BorderBrush="{StaticResource Warn}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="How it behaves" FontWeight="SemiBold" FontSize="12"
+                               Foreground="{StaticResource WarnText}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource WarnText}" FontSize="11"
+                               Margin="0,4,0,0" LineHeight="17"
+                               Text="The mod cannot stop the level change itself — it notices it and loads your level back, so you will briefly see the next one. And it steps aside if you change level twice in a row, so picking a level from the menu is never fought over."/>
+                </StackPanel>
+            </Border>
+
+            <Border Height="16"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

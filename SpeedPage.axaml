@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.SpeedPage"
+             x:CompileBindings="False">
+
+    <StackPanel>
+
+        <local:SectionHeader Text="SPEED READOUT"/>
+
+        <Border Margin="0,0,0,0" Padding="14,12"
+                Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+            <StackPanel>
+                <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}"
+                          FontSize="13" FontWeight="SemiBold" Content="Show speed on the crosshair"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                           Margin="24,4,0,0"
+                           Text="Independent of the game's own speedometer, which stays under your control in the HUD section."/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel IsEnabled="{Binding Enabled}">
+
+            <local:SectionHeader Text="POSITION"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Distance below the crosshair"
+                           Classes="label" Margin="0,0,10,0"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <Border Grid.Column="1" Classes="valueField">
+                    <TextBlock Text="{Binding OffsetY, StringFormat={}{0:0} px}"
+                               Classes="valueText"/>
+                </Border>
+            </Grid>
+            <Slider Minimum="-200" Maximum="300"
+                    Value="{Binding OffsetY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Grid Margin="0,12,0,8" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Horizontal offset"
+                           Classes="label" Margin="0,0,10,0"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <Border Grid.Column="1" Classes="valueField">
+                    <TextBlock Text="{Binding OffsetX, StringFormat={}{0:0} px}"
+                               Classes="valueText"/>
+                </Border>
+            </Grid>
+            <Slider Minimum="-300" Maximum="300"
+                    Value="{Binding OffsetX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <local:SectionHeader Text="APPEARANCE"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Size"
+                           Classes="label" Margin="0,0,10,0"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <Border Grid.Column="1" Classes="valueField">
+                    <TextBlock Text="{Binding Scale, StringFormat={}{0:0.0}×}"
+                               Classes="valueText"/>
+                </Border>
+            </Grid>
+            <Slider Minimum="0.5" Maximum="4" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                    Value="{Binding Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Colour" Classes="label" Margin="0,12,0,4"/>
+            <ItemsControl x:Name="Swatches">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <CheckBox Content="Colour it by speed" Margin="0,12,0,0"
+                      IsChecked="{Binding ColorBySpeed, Mode=TwoWay}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                       Margin="24,4,0,0" LineHeight="17"
+                       Text="The readout runs blue when you are slow through to bright red at top speed, using the same scale as the trail. The colour above is ignored while this is on."/>
+
+        <local:SectionHeader Text="SPEED SCALE"/>
+            <TextBlock Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,4">
+                <Run Text="Top speed"/>
+                <Run Text="{Binding TopSpeed, StringFormat={}{0} units}"
+                     Foreground="{StaticResource Text}"/>
+            </TextBlock>
+            <Slider Minimum="500" Maximum="5000" TickFrequency="50" IsSnapToTickEnabled="True"
+                    Value="{Binding TopSpeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                       Margin="0,6,0,0" LineHeight="17"
+                       Text="Where the gradient turns bright red. 2600 is the speed runners chase, so that is the default. This applies to the trail as well, and takes effect straight away — no need to load the run again."/>
+
+            <local:SectionHeader Text="FORMAT"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Decimal places"
+                           Classes="label" Margin="0,0,10,0"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <Border Grid.Column="1" Classes="valueField">
+                    <TextBlock Text="{Binding Decimals, StringFormat={}{0:0}}"
+                               Classes="valueText"/>
+                </Border>
+            </Grid>
+            <Slider Minimum="0" Maximum="2" TickFrequency="1" IsSnapToTickEnabled="True"
+                    Value="{Binding Decimals, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Grid Margin="0,12,0,0" ColumnDefinitions="Auto,160,*">
+                <TextBlock Grid.Column="0" Text="Suffix" Classes="label"
+                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" Text="{Binding Suffix, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+            </Grid>
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,6,0,0"
+                       Text="Appended after the number, for example &quot; u/s&quot;. Leave empty for just the figure."/>
+
+            <CheckBox Content="Count vertical speed too" Margin="0,12,0,0"
+                      IsChecked="{Binding IncludeFall, Mode=TwoWay}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                       Margin="24,4,0,0" LineHeight="17"
+                       Text="Off by default: horizontal speed is what matters for movement, and including falling makes the figure jump around during drops."/>
+
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

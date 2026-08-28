@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.SectionHeader"
+             x:DataType="local:SectionHeader" x:Name="Root">
+    <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Edge}"
+            BorderThickness="0,1,0,1" Padding="11,7">
+        <StackPanel Orientation="Horizontal">
+            <Rectangle Width="7" Height="7" Margin="0,0,10,0"
+                       VerticalAlignment="Center" Fill="{StaticResource Accent}" />
+            <TextBlock Text="{Binding Text, ElementName=Root}"
+                       Foreground="{StaticResource Text}"
+                       FontFamily="{StaticResource Mono}" FontSize="11" FontWeight="Bold"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+    </Border>
+</UserControl>

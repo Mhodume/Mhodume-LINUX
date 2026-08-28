@@ -1,0 +1,308 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.TrajectoryPage"
+             x:CompileBindings="False">
+
+    <UserControl.Resources>
+        <local:MapNameConverter x:Key="MapName"/>
+    </UserControl.Resources>
+
+    <Grid ColumnDefinitions="*,320">
+
+        <!-- ========================= GHOST PICKER ========================== -->
+        <Grid Grid.Column="0" Margin="24,16,16,20"
+              RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+
+            <local:SectionHeader Grid.Row="0" Text="RECORDED RUNS" First="True"/>
+
+            <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,0,0,14"
+                       Foreground="{StaticResource Muted}" FontSize="12"
+                       Text="Pick a run to draw its path in the world. Ghosts are read from your VHOLUME save folder — your own runs, and any you have downloaded."/>
+
+            <Grid Grid.Row="2" Margin="0,0,0,10" ColumnDefinitions="Auto,*,Auto">
+                <TextBlock Grid.Column="0" Text="Map" Classes="label"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox Grid.Column="1" x:Name="MapBox" HorizontalAlignment="Stretch"
+                          SelectionChanged="MapBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource MapName}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="2" Content="Rescan" Margin="8,0,0,0" Click="Rescan_Click"/>
+            </Grid>
+
+            <Border Grid.Row="3" Background="{StaticResource Panel}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="8">
+                <Grid>
+                    <ListBox x:Name="GhostList"
+                             SelectionChanged="GhostList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Height="24" ColumnDefinitions="*,Auto,86">
+                                    <TextBlock Grid.Column="0" Text="{Binding PlayerName}"
+                                               FontSize="12.5" VerticalAlignment="Center"
+                                               Margin="0,0,10,0"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Category}"
+                                               FontSize="11" VerticalAlignment="Center"
+                                               Margin="0,0,12,0"
+                                               Foreground="{StaticResource Muted}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding TimeText}"
+                                               FontFamily="{StaticResource Mono}" FontSize="12"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock x:Name="ScanNotice" Text="Scanning ghosts…"
+                               Foreground="{StaticResource Muted}" FontSize="12"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsVisible="False"/>
+                </Grid>
+            </Border>
+
+            <!-- Beside the run you just picked, because that is what it reads.
+                 It sat under the pad settings further down, a screen away from
+                 the list it acts on. -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,12,0,0">
+                <Button x:Name="LoadButton" Content="Draw this run"
+                        HorizontalAlignment="Left" Padding="16,7"
+                        Click="Load_Click" IsEnabled="False"/>
+                <Button Content="Read inputs" Margin="8,0,0,0"
+                        HorizontalAlignment="Left" Padding="16,7"
+                        Click="ShowInputs_Click"/>
+            </StackPanel>
+
+            <Border Grid.Row="5" Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock x:Name="LoadedTitle" Text="No run loaded" FontWeight="SemiBold" FontSize="13"/>
+                    <TextBlock x:Name="LoadedDetail" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Foreground="{StaticResource Muted}" FontSize="11"
+                               Text="Select a run above and press “Draw this run”."/>
+
+                    <Border x:Name="MapWarning" IsVisible="False" Margin="0,12,0,0"
+                            Padding="10,8"
+                            Background="{StaticResource WarnFill}" BorderBrush="{StaticResource Warn}" BorderThickness="1">
+                        <TextBlock x:Name="MapWarningText" TextWrapping="Wrap" FontSize="11"
+                                   Foreground="{StaticResource WarnText}"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- =========================== SETTINGS ============================ -->
+        <Border Grid.Column="1" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Line}" BorderThickness="1,0,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16,8,16,16">
+                <StackPanel>
+
+                    <local:SectionHeader Text="DISPLAY" First="True"/>
+                    <CheckBox Content="Show trajectory in game" IsChecked="{Binding Enabled, Mode=TwoWay}"
+                              FontSize="13"/>
+                    <CheckBox Content="Hide the ghost character" IsChecked="{Binding HideGhost, Mode=TwoWay}"
+                              Margin="0,8,0,0"/>
+
+                    <local:SectionHeader Text="LINE"/>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Trail opacity"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding Opacity, StringFormat={}{0:0} %}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="5" Maximum="100"
+                            Value="{Binding Opacity, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="0,4,0,0" LineHeight="16"
+                               Text="The engine draws lines opaque and ignores transparency, so this dims the colour instead. Against dark scenery it reads the same; over a bright wall a faint trail will look dark rather than see-through."/>
+
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Thickness"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding Thickness, StringFormat={}{0:0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="1" Maximum="12"
+                            Value="{Binding Thickness, Mode=TwoWay}"/>
+
+                    <local:SectionHeader Text="COLOUR"/>
+
+                    <RadioButton x:Name="SpeedRadio" GroupName="lineColour"
+                                 Content="By speed" FontSize="12"
+                                 Foreground="{StaticResource Text}"
+                                 IsCheckedChanged="SpeedRadio_Checked"/>
+
+                    <Border x:Name="GradientLegend" Height="12" Margin="20,6,0,0"
+                            BorderBrush="{StaticResource Line}" BorderThickness="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                <GradientStop Color="#2979FF" Offset="0.0"/>
+                                <GradientStop Color="#00E5FF" Offset="0.3"/>
+                                <GradientStop Color="#00E676" Offset="0.55"/>
+                                <GradientStop Color="#FFEB3B" Offset="0.8"/>
+                                <GradientStop Color="#FF3D00" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Grid x:Name="GradientLabels" Margin="20,3,0,0">
+                        <TextBlock Text="slow" HorizontalAlignment="Left"
+                                   Foreground="{StaticResource Muted}" FontSize="10"/>
+                        <TextBlock Text="fast" HorizontalAlignment="Right"
+                                   Foreground="{StaticResource Muted}" FontSize="10"/>
+                    </Grid>
+
+                    <RadioButton x:Name="SolidRadio" GroupName="lineColour"
+                                 Content="Single colour" FontSize="12" Margin="0,12,0,0"
+                                 Foreground="{StaticResource Text}"
+                                 IsCheckedChanged="SolidRadio_Checked"/>
+
+                    <ItemsControl x:Name="Swatches" Margin="20,8,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <Grid Margin="20,2,0,0" ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="Hex" Classes="label"
+                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1" x:Name="HexBox"
+                                 KeyDown="HexBox_KeyDown" LostFocus="HexBox_LostFocus"/>
+                    </Grid>
+
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="20,8,0,0"
+                               Text="Picking a colour switches to single-colour mode."/>
+
+                    <local:SectionHeader Text="FOLLOWING THE LINE"/>
+
+                    <CheckBox Content="Show how closely you are following it"
+                              IsChecked="{Binding Accuracy, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,4,0,0" LineHeight="17"
+                               Text="Two percentages under the crosshair: where you are this instant, and the average since the attempt began. Being moved — a reset, a respawn — starts the average again."/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Counts as off the line at"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding AccWidth, StringFormat={}{0:0.#} m}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.5" Maximum="15"
+                            Value="{Binding AccWidth, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="0,6,0,0" LineHeight="17"
+                               Text="On the line reads a hundred, this far away reads zero, and in between it slides. Threading a gap wants a metre; a rooftop crossing wants ten."/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Across" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding AccOffsetX, StringFormat={}{0:0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="-900" Maximum="900"
+                            Value="{Binding AccOffsetX, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Down" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding AccOffsetY, StringFormat={}{0:0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="-500" Maximum="600"
+                            Value="{Binding AccOffsetY, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Size" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding AccScale, StringFormat={}{0:0.0}×}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.6" Maximum="4"
+                            Value="{Binding AccScale, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="0,6,0,0" LineHeight="17"
+                               Text="Measured from the centre of the screen, so it stays put whatever the resolution. Red at nothing, green at everything, and each number takes its own colour."/>
+
+                    <local:SectionHeader Text="THE GHOST'S HANDS"/>
+
+                    <CheckBox Content="Show which keys it was holding"
+                              IsChecked="{Binding Keys, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,4,0,0" LineHeight="17"
+                               Text="A WASD pad on screen. While you are running it fills with what the ghost held at the point you are nearest; while you are spectating it follows the run's own clock. Runs loaded before this existed carry no keys — load one again to get them."/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Across" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding KeysOffsetX, StringFormat={}{0:0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="-900" Maximum="900"
+                            Value="{Binding KeysOffsetX, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Down" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding KeysOffsetY, StringFormat={}{0:0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="-500" Maximum="600"
+                            Value="{Binding KeysOffsetY, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Size" Classes="label"
+                                   Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding KeysScale, StringFormat={}{0:0.0}×}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.6" Maximum="4"
+                            Value="{Binding KeysScale, Mode=TwoWay}"/>
+
+                    <local:SectionHeader Text="PERFORMANCE"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Draw distance"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding MaxDistance, StringFormat={}{0:0} m}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="20" Maximum="500" TickFrequency="10" IsSnapToTickEnabled="True"
+                            Value="{Binding MaxDistance, Mode=TwoWay}"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,6,0,0"
+                               Text="Points further away than this are skipped. Lower it if the line costs you framerate."/>
+
+                    <Border Height="16"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

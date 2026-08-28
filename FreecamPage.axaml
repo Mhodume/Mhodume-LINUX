@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.FreecamPage"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,24">
+        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12"
+                       LineHeight="18"
+                       Text="Fly through the level to look around, line up a shot, or study a route. Your usual movement keys apply — the game's own controls are used, so nothing to relearn."/>
+
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+                    <CheckBox x:Name="EnabledBox" IsChecked="{Binding Enabled, Mode=TwoWay}"
+                              FontSize="13" FontWeight="SemiBold" Content="Enable freecam"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,4,0,0"
+                               Text="While this is off, the key below does nothing."/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel IsEnabled="{Binding Enabled}">
+
+                <local:SectionHeader Text="KEY"/>
+                <Grid ColumnDefinitions="Auto,160,*">
+                    <TextBlock Grid.Column="0" Text="Toggle with" Classes="label"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ComboBox Grid.Column="1" x:Name="KeyBox" HorizontalAlignment="Stretch"
+                              SelectionChanged="KeyBox_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Label}"
+                                           FontFamily="{StaticResource Mono}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,8,0,0"
+                           Text="Press it in game to take off, press it again to land. F6 and F7 are reserved by the mod, and F10 by the game. Changing this needs the game restarted."/>
+
+                <local:SectionHeader Text="FLIGHT"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Speed"
+                               Classes="label" Margin="0,0,10,0"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <Border Grid.Column="1" Classes="valueField">
+                        <TextBlock Text="{Binding Speed, StringFormat={}{0:0} cm/s}"
+                                   Classes="valueText"/>
+                    </Border>
+                </Grid>
+                <Slider Minimum="200" Maximum="10000" TickFrequency="100" IsSnapToTickEnabled="True"
+                        Value="{Binding Speed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,6,0,0"
+                           Text="Adjustable while flying — the change applies immediately."/>
+
+                <CheckBox Content="Pass through walls" IsChecked="{Binding DisableCollision, Mode=TwoWay}"
+                          Margin="0,12,0,0"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                           Margin="24,4,0,0" LineHeight="17"
+                           Text="Collision is switched off anyway while the safety net below is on, so that flying through the finish line cannot validate the level."/>
+
+                <local:SectionHeader Text="ALTITUDE"/>
+                <CheckBox x:Name="FollowLookBox" Content="Fly where you look"
+                          IsChecked="{Binding FollowLook, Mode=TwoWay}" FontSize="13"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                           Margin="24,4,0,0" LineHeight="17"
+                           Text="Aim up while flying forward to climb, aim down to descend. Looking around on the spot does not move you."/>
+
+                <Grid Margin="0,12,0,4" ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Strength"
+                               Classes="label" Margin="0,0,10,0"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <Border Grid.Column="1" Classes="valueField">
+                        <TextBlock Text="{Binding LookFactor, StringFormat={}{0:0} %}"
+                                   Classes="valueText"/>
+                    </Border>
+                </Grid>
+                <Slider Minimum="0" Maximum="200" TickFrequency="5" IsSnapToTickEnabled="True"
+                        Value="{Binding LookFactor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <local:SectionHeader Text="CONTROLS"/>
+                <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Your move keys"
+                               Foreground="{StaticResource Accent}" FontSize="12"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Fly forwards and sideways"
+                               FontSize="12" Margin="0,0,0,5"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Mouse"
+                               Foreground="{StaticResource Accent}" FontSize="12"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="Aim, and with it your altitude" FontSize="12"/>
+                </Grid>
+
+            </StackPanel>
+
+            <Border Margin="0,20,0,0" Padding="14,12"
+                    Background="{StaticResource NoticeFill}" BorderBrush="{StaticResource Notice}" BorderThickness="1">
+                <StackPanel>
+                    <CheckBox x:Name="ReturnBox" IsChecked="{Binding ReturnOnExit, Mode=TwoWay}"
+                              FontSize="13" FontWeight="SemiBold"
+                              Foreground="{StaticResource Text}"
+                              Content="Land back where you took off"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,6,0,0" LineHeight="17"
+                               Text="Keeps the freecam honest. Without it you could fly ahead and land further along the course, which would skip a section on a game with online leaderboards. The run timer keeps running while you fly, so using the freecam never saves time."/>
+                </StackPanel>
+            </Border>
+
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource WarnFill}" BorderBrush="{StaticResource Warn}" BorderThickness="1">
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource WarnText}" FontSize="11" LineHeight="17"
+                           Text="Turning that off means your character really does land where you flew to. Restart the level before timing a run."/>
+            </Border>
+
+            <Border Height="16"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

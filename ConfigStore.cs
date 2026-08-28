@@ -165,7 +165,23 @@ public class ConfigStore
     // -------------------------------------------------------------- trajectory
     public static readonly string TrajectoryPath = Path.Combine(RootDir, "trajectory.txt");
 
-    // WriteTrajectory / ClearTrajectory come back with the Trajectory page port.
+    /// <summary>
+    /// Writes the point data for the selected ghost, as line-oriented text the
+    /// mod's hand-written Lua parser reads cheaply. Separate from crosshair.json
+    /// because it is far larger and the game only re-parses a file that changed.
+    /// </summary>
+    public void WriteTrajectory(Trajectory traj)
+    {
+        try
+        {
+            WriteAtomic(TrajectoryPath, TrajectoryFile.Render(traj));
+            Status?.Invoke($"Trajectory loaded — {traj.PointCount} points");
+        }
+        catch (Exception ex)
+        {
+            Status?.Invoke("Could not write trajectory: " + ex.Message);
+        }
+    }
 
     /// <summary>What the mod is currently reporting about the running game.</summary>
     public record GameStatus(string? Map, bool Training, bool LapTainted);

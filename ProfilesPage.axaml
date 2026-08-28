@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.ProfilesPage"
+             x:CompileBindings="False">
+
+    <Grid Margin="24,16,24,20"
+          RowDefinitions="Auto,Auto,*"
+          ColumnDefinitions="280,*">
+
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" TextWrapping="Wrap" Margin="0,0,0,14"
+                   Foreground="{StaticResource Muted}" FontSize="12"
+                   Text="A profile stores every section at once — crosshair and HUD. Selecting one applies it in game immediately."/>
+
+        <Border Grid.Row="2" Grid.Column="0" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="8">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                    <Grid ColumnDefinitions="*,6,*">
+                        <Button Grid.Column="0" Content="New" Click="New_Click"/>
+                        <Button Grid.Column="2" Content="Duplicate" Click="Duplicate_Click"/>
+                    </Grid>
+                    <Button Content="Save current settings" Margin="0,6,0,0" Click="Save_Click"/>
+                    <Button Content="Delete" Margin="0,6,0,0" Click="Delete_Click"/>
+                </StackPanel>
+
+                <ListBox x:Name="ProfileList" SelectionChanged="ProfileList_SelectionChanged"/>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="2" Grid.Column="1" Margin="16,0,0,0" Padding="18,16"
+                Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock x:Name="DetailTitle" Text="No profile selected"
+                           FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <TextBlock x:Name="DetailBody" TextWrapping="Wrap" LineHeight="20"
+                           Foreground="{StaticResource Muted}" FontSize="12"
+                           Text="Pick a profile on the left to see what it contains."/>
+                <Button x:Name="RevealButton" Content="Open profiles folder" Margin="0,18,0,0"
+                        HorizontalAlignment="Left" Click="Reveal_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

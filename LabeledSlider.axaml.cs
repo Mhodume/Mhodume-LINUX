@@ -29,7 +29,6 @@ public partial class LabeledSlider : UserControl
 
     public LabeledSlider() => InitializeComponent();
 
-    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
     public string Header { get => GetValue(HeaderProperty); set => SetValue(HeaderProperty, value); }
     public double Min { get => GetValue(MinProperty); set => SetValue(MinProperty, value); }

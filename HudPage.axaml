@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.HudPage"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,24">
+        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12"
+                       Text="Show or hide the game's own HUD widgets. These are the same switches as the in-game options menu, driven from here."/>
+
+            <!-- Master switch -->
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+                    <CheckBox x:Name="ManageBox" IsChecked="{Binding Manage, Mode=TwoWay}"
+                              FontSize="13" FontWeight="SemiBold"
+                              Content="Let the mod menu control HUD elements"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,4,0,0"
+                               Text="While this is off, the game keeps whatever you set in its own options menu and nothing below is applied."/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Margin="0,8,0,0" IsEnabled="{Binding Manage}">
+
+                <Border Margin="0,8,0,0" Padding="14,12"
+                        Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding ShowSpeedometer, Mode=TwoWay}" FontSize="13"
+                                  Content="Speedometer"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                                   Margin="24,4,0,0" Text="Current speed, shown under the crosshair."/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,8,0,0" Padding="14,12"
+                        Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding ShowTimer, Mode=TwoWay}" FontSize="13"
+                                  Content="Run timer"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                                   Margin="24,4,0,0" Text="Elapsed time for the current run."/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,8,0,0" Padding="14,12"
+                        Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding ShowCheckpointTime, Mode=TwoWay}" FontSize="13"
+                                  Content="Checkpoint splits"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                                   Margin="24,4,0,0" Text="Split times shown as you pass checkpoints."/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <Border Margin="0,20,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11">
+                    <Run Text="The game's own crosshair is not listed here — it is controlled by the"/>
+                    <Run Text=" Crosshair " Foreground="{StaticResource Accent}"/>
+                    <Run Text="section, so the two cannot contradict each other."/>
+                </TextBlock>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

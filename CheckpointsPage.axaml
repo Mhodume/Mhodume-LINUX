@@ -1,0 +1,533 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.CheckpointsPage"
+             x:CompileBindings="False">
+
+    <UserControl.Resources>
+        <local:MapNameConverter x:Key="MapName"/>
+        <!-- one section: its times, and a way to remove it -->
+        <DataTemplate x:Key="SectionRow">
+            <Border Margin="0,0,0,8" Padding="14,12"
+                    Background="{StaticResource PanelAlt}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+
+                    <!-- which section, and the buttons for it -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding LengthText}" FontSize="11" Margin="10,0,0,0"
+                                       VerticalAlignment="Bottom"
+                                       Foreground="{StaticResource Muted}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <Button Content="Drill" Padding="14,5" Tag="{Binding Number}"
+                                    BorderBrush="{StaticResource Accent}"
+                                    Foreground="{StaticResource Accent}"
+                                    Click="Drill_Click"
+                                    ToolTip.Tip="Puts you at the start of this section with the speed you had on your best run, and again each time you finish it"/>
+                            <Button Content="Go" Padding="12,5" Margin="6,0,0,0"
+                                    Tag="{Binding Number}" Click="GoTo_Click"
+                                    ToolTip.Tip="Puts you on this section once, without drilling it"/>
+                            <Button Content="Export" Padding="12,5" Margin="6,0,0,0"
+                                    Tag="{Binding Number}" Click="ExportSection_Click"
+                                    ToolTip.Tip="Writes just this section to a file, to send someone"/>
+                            <Button Content="Remove" Margin="10,0,0,0" Padding="4,5"
+                                    Background="Transparent" BorderThickness="0"
+                                    Foreground="{StaticResource Accent}"
+                                    Tag="{Binding Number}" Click="RemoveSection_Click"
+                                    ToolTip.Tip="Deletes both checkpoints of this section, and its times"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- the three times, which is the point of the page -->
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="118"/>
+                            <ColumnDefinition Width="118"/>
+                            <ColumnDefinition Width="118"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="BEST"
+                                   FontFamily="{StaticResource Mono}" FontSize="10"
+                                   Foreground="{StaticResource Muted}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="OLD"
+                                   FontFamily="{StaticResource Mono}" FontSize="10"
+                                   Foreground="{StaticResource Muted}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="NEW"
+                                   FontFamily="{StaticResource Mono}" FontSize="10"
+                                   Foreground="{StaticResource Muted}"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding BestText}"
+                                   FontFamily="{StaticResource Mono}" FontSize="18"
+                                   Margin="0,3,0,0" Foreground="{StaticResource Accent}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PreviousText}"
+                                   FontFamily="{StaticResource Mono}" FontSize="18"
+                                   Margin="0,3,0,0" Foreground="{StaticResource Muted}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding LastText}"
+                                   FontFamily="{StaticResource Mono}" FontSize="18"
+                                   Margin="0,3,0,0"/>
+                        <!-- muted, but the accent shows when the newest run is the best (was a DataTrigger on LastIsBest) -->
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding DeltaText}"
+                                   FontFamily="{StaticResource Mono}" FontSize="11"
+                                   VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                   Classes.best="{Binding LastIsBest}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+                                </Style>
+                                <Style Selector="TextBlock.best">
+                                    <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,24">
+        <StackPanel MaxWidth="660" HorizontalAlignment="Left">
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12"
+                       LineHeight="18"
+                       Text="Drop two checkpoints and the stretch between them is timed. Run it again and again, and the times tell you whether what you changed helped."/>
+
+            <Border Margin="0,12,0,0" Padding="14,12"
+                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <StackPanel>
+                    <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}"
+                              FontSize="13" FontWeight="SemiBold" Content="Checkpoints on"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               Margin="24,6,0,0" LineHeight="17">
+                        <Run Text="Press"/>
+                        <Run Text="{Binding Key, Mode=OneWay}" Foreground="{StaticResource Text}"/>
+                        <Run Text="in game to drop one where you stand. Needs training mode (F7), and marks the lap as practice."/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- ===================== SECTIONS ON THIS MAP ===================== -->
+            <Grid Margin="0,18,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Map" Classes="label"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox Grid.Column="1" x:Name="MapBox" HorizontalAlignment="Stretch"
+                          SelectionChanged="MapBox_SelectionChanged"
+                          ToolTip.Tip="The map whose checkpoints are shown. Defaults to the one you are playing.">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource MapName}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="2" Content="Import…" Margin="8,0,0,0" Click="Import_Click"
+                        ToolTip.Tip="Adds checkpoints from a file — one section or a whole map"/>
+                <Button Grid.Column="3" Content="Refresh" Margin="6,0,0,0" Click="Refresh_Click"/>
+            </Grid>
+
+            <Border Background="{StaticResource Panel}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="10"
+                    MinHeight="90">
+                <Grid>
+                    <ItemsControl x:Name="SectionList" ItemTemplate="{StaticResource SectionRow}"/>
+                    <TextBlock x:Name="EmptyNote" TextWrapping="Wrap"
+                               Foreground="{StaticResource Muted}" FontSize="12"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               TextAlignment="Center" Margin="20"/>
+                </Grid>
+            </Border>
+
+            <Border x:Name="DrillBar" Margin="0,12,0,0" Padding="12,10"
+                    Background="{StaticResource NoticeFill}" BorderBrush="{StaticResource Notice}"
+                    BorderThickness="1" IsVisible="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock x:Name="DrillTitle" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{StaticResource Accent}"/>
+                        <TextBlock Classes="drawerHint"
+                                   Text="Finishing it puts you straight back at the start, and so does resetting the run. Needs training mode in game."/>
+                        <CheckBox Content="Hold me there until I look around" Margin="0,8,0,0"
+                                  IsChecked="{Binding HoldOnReturn, Mode=TwoWay}"
+                                  ToolTip.Tip="Arriving at speed the instant you finish leaves no moment to think. Move the mouse to go."/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Stop" Padding="12,6"
+                            VerticalAlignment="Center" Click="StopDrill_Click"/>
+                </Grid>
+            </Border>
+
+            <TextBlock x:Name="ImportNote" Classes="drawerHint"
+                       Margin="0,8,0,0" IsVisible="False"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button x:Name="ClearTimesButton" Content="Clear the times"
+                        Padding="12,6" Click="ClearTimes_Click"
+                        ToolTip.Tip="Keeps the checkpoints, forgets every time recorded on them"/>
+                <Button x:Name="DeleteMapButton" Content="Delete them all" Margin="8,0,0,0"
+                        Padding="12,6" Click="DeleteMap_Click"
+                        ToolTip.Tip="Removes every checkpoint on this map"/>
+            </StackPanel>
+
+            <!-- ============================ SHARING =========================== -->
+            <Expander>
+                <Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Share"
+                                   Classes="drawerTitle"/>
+                        <TextBlock Grid.Column="1" Text="Send a set of checkpoints to someone, or take theirs"
+                                   Classes="drawerHint" Margin="16,0,10,0"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11"
+                               LineHeight="17" Margin="0,4,0,10"
+                               Text="Checkpoints are positions in the world, so a set only makes sense on the map it was made for. Times are personal and are never exported."/>
+                    <Button x:Name="ExportButton" Content="Export the whole map"
+                            HorizontalAlignment="Left" Padding="12,6" Click="Export_Click"/>
+                    <TextBlock Classes="drawerHint" Margin="0,6,0,0"
+                               Text="Every section at once, for handing over a complete route. A single section has its own Export button in the list above, and importing is up there too."/>
+                    <TextBlock x:Name="ShareNote" Classes="drawerHint"
+                               Margin="0,12,0,0"/>
+                </StackPanel>
+            </Expander>
+
+            <!-- =========================== CROSSING =========================== -->
+            <Expander>
+                <Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Crossing"
+                                   Classes="drawerTitle"/>
+                        <TextBlock Grid.Column="1" Text="How close you have to pass for one to count"
+                                   Classes="drawerHint" Margin="16,0,10,0"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel>
+                    <Grid Margin="0,6,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Horizontal reach"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding Radius, StringFormat={}{0} cm}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="50" Maximum="1000" TickFrequency="25" IsSnapToTickEnabled="True"
+                            Value="{Binding Radius, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Vertical reach"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding Height, StringFormat={}{0} cm}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="50" Maximum="3000" TickFrequency="50" IsSnapToTickEnabled="True"
+                            Value="{Binding Height, Mode=TwoWay}"/>
+                    <TextBlock Classes="drawerHint" Margin="0,6,0,0"
+                               Text="Larger than the horizontal reach by default: you drop a checkpoint standing on the ground and cross it mid-jump. Crossing is measured against the path you travelled between frames, so one cannot be skipped over at speed."/>
+
+                    <TextBlock Text="Capture key" Classes="label" Margin="0,12,0,8"/>
+                    <ComboBox x:Name="KeyBox" Width="140" HorizontalAlignment="Left"
+                              SelectedItem="{Binding Key, Mode=TwoWay}"
+                              ToolTip.Tip="Shared with the other keys the mod binds. F10 is missing on purpose: the game opens its console with it."/>
+                </StackPanel>
+            </Expander>
+
+            <!-- ============================ TIMER ============================= -->
+            <Expander>
+                <Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Timer and panel"
+                                   Classes="drawerTitle"/>
+                        <TextBlock Grid.Column="1" Text="Where the times appear on screen, and how large"
+                                   Classes="drawerHint" Margin="16,0,10,0"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel>
+                    <CheckBox Content="Show the running clock" Margin="0,6,0,0"
+                              IsChecked="{Binding ShowClock, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Clock, below the crosshair"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding OffsetY, StringFormat={}{0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="-300" Maximum="400" TickFrequency="2" IsSnapToTickEnabled="True"
+                            Value="{Binding OffsetY, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Clock size"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding Scale, StringFormat={}{0:0.0}×}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.5" Maximum="4" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                            Value="{Binding Scale, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="A split stays on screen for"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding HoldSeconds, StringFormat={}{0:0.0} s}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.5" Maximum="10" TickFrequency="0.5" IsSnapToTickEnabled="True"
+                            Value="{Binding HoldSeconds, Mode=TwoWay}"/>
+
+                    <TextBlock Text="Clock colour" Classes="label" Margin="0,12,0,8"/>
+                    <ItemsControl x:Name="TextSwatches">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <TextBlock Classes="drawerHint"
+                               Text="Splits ignore this: green when you beat your best on that section, red when you did not."/>
+
+                    <local:SectionHeader Text="THE PANEL"/>
+                    <CheckBox Content="Show the section list" IsChecked="{Binding Panel, Mode=TwoWay}"/>
+                    <CheckBox Content="Label the columns" Margin="0,8,0,0"
+                              IsChecked="{Binding PanelHeader, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="From the left"
+                                           Classes="label" Margin="0,0,10,0"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <Border Grid.Column="1" Classes="valueField">
+                                    <TextBlock Text="{Binding PanelX, StringFormat={}{0} px}"
+                                               Classes="valueText"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="2000" TickFrequency="4" IsSnapToTickEnabled="True"
+                                    Value="{Binding PanelX, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="From the top"
+                                           Classes="label" Margin="0,0,10,0"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <Border Grid.Column="1" Classes="valueField">
+                                    <TextBlock Text="{Binding PanelY, StringFormat={}{0} px}"
+                                               Classes="valueText"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="1200" TickFrequency="4" IsSnapToTickEnabled="True"
+                                    Value="{Binding PanelY, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Panel size"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding PanelScale, StringFormat={}{0:0.00}×}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="0.4" Maximum="2.5" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                            Value="{Binding PanelScale, Mode=TwoWay}"/>
+                </StackPanel>
+            </Expander>
+
+            <!-- =========================== MARKERS ============================ -->
+            <Expander>
+                <Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Markers"
+                                   Classes="drawerTitle"/>
+                        <TextBlock Grid.Column="1" Text="The boxes drawn in the world, and how far they are visible"
+                                   Classes="drawerHint" Margin="16,0,10,0"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel>
+                    <CheckBox Content="Show checkpoints in the world" Margin="0,6,0,0"
+                              IsChecked="{Binding Show, Mode=TwoWay}"/>
+                    <TextBlock Classes="drawerHint"
+                               Text="Green is the one you are heading for. Otherwise an opening checkpoint and the one that closes its section are different colours, so a pair reads as a pair."/>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Visible up to"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding MarkerDistance, StringFormat={}{0} cm}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="500" Maximum="30000" TickFrequency="250" IsSnapToTickEnabled="True"
+                            Value="{Binding MarkerDistance, Mode=TwoWay}"/>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Width"
+                                           Classes="label" Margin="0,0,10,0"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <Border Grid.Column="1" Classes="valueField">
+                                    <TextBlock Text="{Binding MarkerSize, StringFormat={}{0} cm}"
+                                               Classes="valueText"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="20" Maximum="600" TickFrequency="10" IsSnapToTickEnabled="True"
+                                    Value="{Binding MarkerSize, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Height"
+                                           Classes="label" Margin="0,0,10,0"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <Border Grid.Column="1" Classes="valueField">
+                                    <TextBlock Text="{Binding MarkerHeight, StringFormat={}{0} cm}"
+                                               Classes="valueText"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="5" Maximum="400" TickFrequency="5" IsSnapToTickEnabled="True"
+                                    Value="{Binding MarkerHeight, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Line thickness"
+                                   Classes="label" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Column="1" Classes="valueField">
+                            <TextBlock Text="{Binding MarkerThickness, StringFormat={}{0} px}"
+                                       Classes="valueText"/>
+                        </Border>
+                    </Grid>
+                    <Slider Minimum="1" Maximum="8" TickFrequency="1" IsSnapToTickEnabled="True"
+                            Value="{Binding MarkerThickness, Mode=TwoWay}"/>
+
+                    <TextBlock Text="Marker colour" Classes="label" Margin="0,12,0,8"/>
+                    <ItemsControl x:Name="MarkerSwatches">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Expander>
+
+            <Border Height="16"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
