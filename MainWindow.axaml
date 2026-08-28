@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Mhodume"
+        x:Class="Mhodume.MainWindow"
+        Title="Mhodume" Width="900" Height="640"
+        MinWidth="760" MinHeight="520"
+        Background="{StaticResource Bg}"
+        Foreground="{StaticResource Text}"
+        FontFamily="{StaticResource Mono}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ============================= HEADER ============================= -->
+        <Border Grid.Row="0" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Edge}" BorderThickness="0,0,0,1"
+                Padding="16,10">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Border Background="{StaticResource Accent}" Padding="10,3">
+                    <TextBlock Text="MHODUME" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource BgColor}" />
+                </Border>
+                <TextBlock Text="LINUX" Foreground="{StaticResource Muted}"
+                           FontSize="11" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- ============================== BODY ============================= -->
+        <local:CrosshairPage Grid.Row="1" x:Name="Crosshair" />
+
+        <!-- ============================= STATUS ============================ -->
+        <Border Grid.Row="2" Background="{StaticResource Panel}"
+                BorderBrush="{StaticResource Edge}" BorderThickness="0,1,0,0"
+                Padding="16,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" x:Name="StatusText" FontSize="12"
+                           Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" x:Name="BridgeText" FontSize="12"
+                           VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.CrosshairPage"
+             x:CompileBindings="False">
+
+    <Grid ColumnDefinitions="*,16,320" Margin="20">
+
+        <!-- ============================ CONTROLS ============================ -->
+        <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14">
+
+                <StackPanel Orientation="Horizontal" Spacing="18">
+                    <CheckBox Content="Enabled" IsChecked="{Binding Enabled, Mode=TwoWay}" />
+                    <CheckBox Content="Hide the game's crosshair"
+                              IsChecked="{Binding HideNative, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="label" Text="SHAPE" />
+                    <ComboBox x:Name="ShapeBox" HorizontalAlignment="Stretch"
+                              SelectionChanged="ShapeBox_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- geometry -->
+                <local:LabeledSlider Header="Gap" Min="0" Max="40"
+                                     Value="{Binding Gap, Mode=TwoWay}" />
+                <local:LabeledSlider Header="Length" Min="0" Max="60"
+                                     Value="{Binding Length, Mode=TwoWay}" />
+                <local:LabeledSlider Header="Thickness" Min="1" Max="12"
+                                     Value="{Binding Thickness, Mode=TwoWay}" />
+                <local:LabeledSlider Header="Centre dot" Min="0" Max="14"
+                                     Value="{Binding Dot, Mode=TwoWay}" />
+
+                <StackPanel x:Name="CirclePanel" Spacing="14">
+                    <local:LabeledSlider Header="Circle radius" Min="4" Max="60"
+                                         Value="{Binding Radius, Mode=TwoWay}" />
+                    <local:LabeledSlider Header="Circle smoothness" Min="8" Max="64"
+                                         Value="{Binding Segments, Mode=TwoWay}" />
+                </StackPanel>
+
+                <!-- offsets -->
+                <local:LabeledSlider Header="Offset X" Min="-100" Max="100"
+                                     Value="{Binding OffsetX, Mode=TwoWay}" />
+                <local:LabeledSlider Header="Offset Y" Min="-100" Max="100"
+                                     Value="{Binding OffsetY, Mode=TwoWay}" />
+
+                <!-- colour -->
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="label" Text="COLOUR" />
+                    <ItemsControl x:Name="Swatches">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="HexBox" Width="110" Watermark="#RRGGBB"
+                                 LostFocus="HexBox_LostFocus" KeyDown="HexBox_KeyDown" />
+                    </StackPanel>
+                    <local:LabeledSlider Header="Opacity %" Min="0" Max="100"
+                                         Value="{Binding OpacityPercent, Mode=TwoWay}" />
+                </StackPanel>
+
+                <!-- outline -->
+                <StackPanel Spacing="8">
+                    <CheckBox Content="Outline" IsChecked="{Binding Outline, Mode=TwoWay}" />
+                    <local:LabeledSlider Header="Outline thickness" Min="0" Max="6"
+                                         Value="{Binding OutlineThickness, Mode=TwoWay}" />
+                </StackPanel>
+
+                <!-- tilt -->
+                <StackPanel Spacing="8">
+                    <CheckBox Content="Tilt with movement" IsChecked="{Binding Tilt, Mode=TwoWay}" />
+                    <local:LabeledSlider Header="Tilt factor" Min="0" Max="3" Step="0.1"
+                                         Value="{Binding TiltFactor, Mode=TwoWay}" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ============================ PREVIEW ============================= -->
+        <StackPanel Grid.Column="2" Spacing="10">
+            <Border BorderBrush="{StaticResource Edge}" BorderThickness="1" Height="300">
+                <local:CrosshairPreview x:Name="Preview" />
+            </Border>
+            <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Classes="label" Text="BACKDROP"
+                           VerticalAlignment="Center" Margin="0,0,10,0" />
+                <ComboBox Grid.Column="1" x:Name="BackdropBox" HorizontalAlignment="Stretch"
+                          SelectionChanged="BackdropBox_SelectionChanged" />
+            </Grid>
+            <StackPanel Spacing="2">
+                <TextBlock Classes="label" Text="ZOOM" />
+                <Slider x:Name="ZoomSlider" Minimum="1" Maximum="6" Value="2.5" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

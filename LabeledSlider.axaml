@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mhodume"
+             x:Class="Mhodume.LabeledSlider"
+             x:DataType="local:LabeledSlider" x:Name="Root">
+    <StackPanel Spacing="2">
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Classes="label"
+                       Text="{Binding Header, ElementName=Root}" />
+            <TextBlock Grid.Column="1" Foreground="{StaticResource Muted}" FontSize="11"
+                       Text="{Binding Value, ElementName=Root, StringFormat={}{0:0.##}}" />
+        </Grid>
+        <Slider Minimum="{Binding Min, ElementName=Root}"
+                Maximum="{Binding Max, ElementName=Root}"
+                TickFrequency="{Binding Step, ElementName=Root}"
+                IsSnapToTickEnabled="True"
+                Value="{Binding Value, ElementName=Root, Mode=TwoWay}" />
+    </StackPanel>
+</UserControl>
