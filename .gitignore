@@ -2,3 +2,6 @@ bin/
 obj/
 *.user
 .vs/
+release-linux/
+bundle-linux/
+*.tar.gz
