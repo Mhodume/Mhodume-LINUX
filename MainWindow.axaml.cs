@@ -61,6 +61,8 @@ public partial class MainWindow : Window
                     Note = "how the game behaves while you practise" },
 
             new() { Name = "PROGRESS", Group = "PROGRESS" },
+            new() { Name = "Completion", Page = PageCompletion,
+                    Note = "levels finished, B-sides, best times — live from your save" },
             new() { Name = "NPCs", Page = PageNpcs,
                     Note = "who you have spoken to, live from your save" },
 

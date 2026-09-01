@@ -85,6 +85,7 @@
                 <local:TrajectoryPage  x:Name="PageTrajectory"  IsVisible="False" />
                 <local:FreecamPage     x:Name="PageFreecam"     IsVisible="False" />
                 <local:TweaksPage      x:Name="PageTweaks"      IsVisible="False" />
+                <local:CompletionPage  x:Name="PageCompletion"  IsVisible="False" />
                 <local:NpcPage         x:Name="PageNpcs"        IsVisible="False" />
                 <local:ProfilesPage    x:Name="PageProfiles"    IsVisible="False" />
 

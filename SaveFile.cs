@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Mhodume;
@@ -57,41 +58,56 @@ public static class SaveFile
         return result;
     }
 
+    /// <summary>The NPCs spoken to, as "&lt;map&gt;:BP_NPC_Dialog_C_&lt;n&gt;" keys.</summary>
+    public static List<string> NpcsInteractedWith() =>
+        ReadStringArray("NPCInteractedWith", s => s.Contains(':'));
+
+    /// <summary>The maps finished at least once, as level asset names.</summary>
+    public static List<string> MapsFinished() =>
+        ReadStringArray("MapFinishedOnce", LooksLikeMap);
+
+    /// <summary>The maps whose B-side has been collected, as level asset names.</summary>
+    public static List<string> BSideMaps() =>
+        ReadStringArray("BSideCollectedMaps", LooksLikeMap);
+
     /// <summary>
-    /// The NPCs the player has spoken to, as "&lt;map&gt;:BP_NPC_Dialog_C_&lt;n&gt;" keys.
-    /// Read from the NPCInteractedWith array in the save; empty when the save has
-    /// none or cannot be read.
+    /// A level asset name: starts with a letter, then word characters, and not a
+    /// property-type name like "StrProperty" — those sit in the array's metadata
+    /// and would otherwise be taken as the first entry and pass the scan.
     /// </summary>
-    public static List<string> NpcsInteractedWith()
+    private static bool LooksLikeMap(string s) =>
+        s.Length > 2 && char.IsLetter(s[0])
+        && s.All(c => char.IsLetterOrDigit(c) || c == '_')
+        && !s.EndsWith("Property");
+
+    /// <summary>
+    /// Reads a named ArrayProperty of strings. The array's type metadata is
+    /// stepped over by scanning: the count is the first position where it and
+    /// that many strings all passing <paramref name="valid"/> parse cleanly — a
+    /// stray integer taken as a count then fails the test, so the scan moves on.
+    /// </summary>
+    private static List<string> ReadStringArray(string key, Func<string, bool> valid)
     {
         var result = new List<string>();
         byte[] b;
         try { b = File.ReadAllBytes(SavePath); }
         catch { return result; }
 
-        var at = Find(b, "NPCInteractedWith");
+        var at = Find(b, key);
         if (at < 0) return result;
 
-        // Skip the property name; the count sits a little way past the array's
-        // type metadata, whose exact layout we do not depend on — scan for the
-        // first position where a count and that many NPC keys parse cleanly.
         var o = at - 4;
         if (ReadString(b, ref o) is null) return result;
 
         for (var probe = o; probe < Math.Min(b.Length - 4, o + 128); probe++)
         {
-            var list = TryReadNpcArray(b, probe);
+            var list = TryReadArray(b, probe, valid);
             if (list is not null) return list;
         }
         return result;
     }
 
-    /// <summary>
-    /// Reads a count then that many FStrings, accepted only if every one looks
-    /// like an NPC key (has a "map:npc" colon) — a stray integer taken as a count
-    /// then fails that test, so the scan moves on.
-    /// </summary>
-    private static List<string>? TryReadNpcArray(byte[] b, int o)
+    private static List<string>? TryReadArray(byte[] b, int o, Func<string, bool> valid)
     {
         var count = BitConverter.ToInt32(b, o);
         if (count <= 0 || count > MaxEntries) return null;
@@ -101,7 +117,7 @@ public static class SaveFile
         for (var i = 0; i < count; i++)
         {
             var s = ReadString(b, ref o);
-            if (string.IsNullOrEmpty(s) || !s.Contains(':')) return null;
+            if (string.IsNullOrEmpty(s) || !valid(s)) return null;
             list.Add(s);
         }
         return list;
