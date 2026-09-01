@@ -49,20 +49,20 @@ public partial class MainWindow : Window
                     Note = "the game's own overlay · applies live" },
 
             new() { Name = "ROUTE", Group = "ROUTE" },
-            new() { Name = "Maps", Page = PageMaps,
-                    Note = "read from your save and ghost folders" },
             new() { Name = "Checkpoints", Page = PageCheckpoints,
-                    Note = "your own splits", NeedsTraining = true },
+                    Note = "your own splits" },
             new() { Name = "Trajectory", Page = PageTrajectory,
-                    Note = "a saved run drawn in the world", NeedsTraining = true },
+                    Note = "a saved run drawn in the world" },
 
             new() { Name = "TOOLS", Group = "TOOLS" },
             new() { Name = "Freecam", Page = PageFreecam,
-                    Note = "detach the camera", NeedsTraining = true },
-            new() { Name = "Training", Page = PageTraining,
-                    Note = "whether this lap still counts" },
+                    Note = "detach the camera" },
             new() { Name = "Tweaks", Page = PageTweaks,
                     Note = "how the game behaves while you practise" },
+
+            new() { Name = "PROGRESS", Group = "PROGRESS" },
+            new() { Name = "NPCs", Page = PageNpcs,
+                    Note = "who you have spoken to, live from your save" },
 
             new() { Name = "APP", Group = "APP" },
             new() { Name = "Profiles", Page = PageProfiles,
@@ -115,13 +115,8 @@ public partial class MainWindow : Window
         PageTrajectory.DataContext = _config.Trajectory;
         PageFreecam.DataContext = _config.Freecam;
         PageCrosshair.SetSpeedContext(_config.Speed);
-        PageTraining.DataContext = _config.Training;
         PageTweaks.DataContext = _config.Tweaks;
         PageCheckpoints.DataContext = _config.Checkpoints;
-
-        // Maps writes into the trajectory section, which is replaced wholesale
-        // when a profile is loaded — so it is re-pointed here, not once at startup.
-        PageMaps.Initialize(_store, _config.Trajectory);
     }
 
     private void Config_AnyChanged(object? sender, EventArgs e)
@@ -237,7 +232,6 @@ public partial class MainWindow : Window
             }
 
             PageTrajectory.UpdateCurrentMap(running ? status.Map : null);
-            PageTraining.UpdateState(running, status.Training, status.LapTainted);
         };
         _gameWatch.Start();
     }

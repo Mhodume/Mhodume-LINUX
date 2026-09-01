@@ -58,6 +58,56 @@ public static class SaveFile
     }
 
     /// <summary>
+    /// The NPCs the player has spoken to, as "&lt;map&gt;:BP_NPC_Dialog_C_&lt;n&gt;" keys.
+    /// Read from the NPCInteractedWith array in the save; empty when the save has
+    /// none or cannot be read.
+    /// </summary>
+    public static List<string> NpcsInteractedWith()
+    {
+        var result = new List<string>();
+        byte[] b;
+        try { b = File.ReadAllBytes(SavePath); }
+        catch { return result; }
+
+        var at = Find(b, "NPCInteractedWith");
+        if (at < 0) return result;
+
+        // Skip the property name; the count sits a little way past the array's
+        // type metadata, whose exact layout we do not depend on — scan for the
+        // first position where a count and that many NPC keys parse cleanly.
+        var o = at - 4;
+        if (ReadString(b, ref o) is null) return result;
+
+        for (var probe = o; probe < Math.Min(b.Length - 4, o + 128); probe++)
+        {
+            var list = TryReadNpcArray(b, probe);
+            if (list is not null) return list;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Reads a count then that many FStrings, accepted only if every one looks
+    /// like an NPC key (has a "map:npc" colon) — a stray integer taken as a count
+    /// then fails that test, so the scan moves on.
+    /// </summary>
+    private static List<string>? TryReadNpcArray(byte[] b, int o)
+    {
+        var count = BitConverter.ToInt32(b, o);
+        if (count <= 0 || count > MaxEntries) return null;
+        o += 4;
+
+        var list = new List<string>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var s = ReadString(b, ref o);
+            if (string.IsNullOrEmpty(s) || !s.Contains(':')) return null;
+            list.Add(s);
+        }
+        return list;
+    }
+
+    /// <summary>
     /// Reads a count followed by that many (name, ticks) pairs, but only accepts
     /// the result if it ends on a real property header — otherwise a stray
     /// integer in the metadata would pass as a plausible count.

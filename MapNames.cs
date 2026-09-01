@@ -104,4 +104,10 @@ public static class MapNames
 
     /// <summary>How many levels the table covers.</summary>
     public static int Count => Known.Count;
+
+    /// <summary>Every known level as (asset, display name), sorted by display.</summary>
+    public static IEnumerable<(string Asset, string Display)> All =>
+        System.Linq.Enumerable.OrderBy(
+            System.Linq.Enumerable.Select(Known, k => (k.Key, k.Value.Name)),
+            x => x.Item2, System.StringComparer.OrdinalIgnoreCase);
 }

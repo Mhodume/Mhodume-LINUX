@@ -12,10 +12,14 @@ public record GhostInfo(
     double DurationSeconds,
     int TimeMs,
     bool Completed,
-    string Category)
+    string Category,
+    DateTime Recorded)
 {
     public string TimeText => TimeSpan.FromMilliseconds(TimeMs).ToString(@"m\:ss\.fff");
     public string Display => $"{PlayerName} — {TimeText}{(Completed ? "" : " (unfinished)")}";
+
+    /// <summary>When the run was recorded, short and relative-feeling.</summary>
+    public string DateText => Recorded == default ? "" : Recorded.ToString("dd MMM");
 }
 
 /// <summary>One continuous run of points; a teleport starts a new segment.</summary>
@@ -73,7 +77,7 @@ public record CameraSample(double Seconds, double X, double Y, double Z,
 /// runner was, how fast, and what they were holding.
 /// </summary>
 internal readonly record struct Sample(
-    double X, double Y, double Z, double Speed, int Inputs);
+    double X, double Y, double Z, double Speed, int Inputs, double Time);
 
 /// <summary>
 /// A frame as read, before the accumulated values have been pulled back onto
@@ -93,8 +97,18 @@ internal class Frame
 
 public static class GhostFile
 {
-    /// <summary>Anything longer than this between two frames is a teleport, not movement.</summary>
+    /// <summary>
+    /// Floor for the teleport cut, for moments too slow for the speed to say
+    /// much (standing still, then respawned). Fast movement is judged against the
+    /// speed instead — see <see cref="TeleportSpeedMargin"/> — so a high-speed
+    /// stretch is never torn apart, which a fixed cut at this value used to do.
+    /// </summary>
     private const double TeleportThresholdCm = 600;
+
+    /// <summary>How far past what the speed allows in one frame still counts as
+    /// movement, not a teleport. A respawn jumps far beyond this; fast running
+    /// does not.</summary>
+    private const double TeleportSpeedMargin = 2.5;
 
     /// <summary>Douglas-Peucker tolerance. Below this, points add nothing visible.</summary>
     private const double SimplifyToleranceCm = 20;
@@ -145,7 +159,12 @@ public static class GhostFile
         if (path.Contains(Path.Combine("Ghosts", "Downloaded"), StringComparison.OrdinalIgnoreCase))
             category = "Downloaded";
 
-        return new GhostInfo(path, map, player, duration, timeMs, completed, category);
+        // The file's own write time is when the run was saved — a real date to
+        // sort by, with no timestamp needed in the ghost itself.
+        DateTime recorded;
+        try { recorded = File.GetLastWriteTime(path); } catch { recorded = default; }
+
+        return new GhostInfo(path, map, player, duration, timeMs, completed, category, recorded);
     }
 
     private static string Decompress(string path)
@@ -270,19 +289,32 @@ public static class GhostFile
                                              fr.Yaw, fr.Pitch, fr.Mask));
 
         var raw = frames
-            .Select(fr => new Sample(fr.X, fr.Y, fr.Z, fr.Speed, fr.Mask))
+            .Select(fr => new Sample(fr.X, fr.Y, fr.Z, fr.Speed, fr.Mask, fr.T))
             .ToList();
 
         var maxSpeed = Math.Max(1, raw.Max(r => r.Speed));
 
         // ---- split on teleports, simplify each piece
+        var medianSeconds = EstimateFrameSeconds(raw);   // fallback when a pair has no usable time
         var piece = new List<Sample> { raw[0] };
         var pieces = new List<List<Sample>> { piece };
 
         for (int i = 1; i < raw.Count; i++)
         {
             var step = Distance(raw[i - 1], raw[i]);
-            if (step > TeleportThresholdCm)
+            // A real teleport is a jump the recorded speed cannot cover in the
+            // time between these two frames. The time is taken per pair from the
+            // frame stamps, so however fast the run - and however the recording
+            // is paced - a stretch reads as movement rather than being chopped
+            // into pieces the drawing then drops. Only a respawn, far past what
+            // the speed allows over that interval, is cut. A fixed cut tore fast
+            // sections apart, which is what left them full of holes.
+            var dt = raw[i].Time - raw[i - 1].Time;
+            if (dt <= 0) dt = medianSeconds;
+            var pairSpeed = Math.Max(raw[i].Speed, raw[i - 1].Speed);
+            var allowed = Math.Max(TeleportThresholdCm,
+                                   pairSpeed * dt * TeleportSpeedMargin);
+            if (step > allowed)
             {
                 piece = new List<Sample>();
                 pieces.Add(piece);
@@ -378,6 +410,26 @@ public static class GhostFile
     }
 
     private static double Round(double v) => Math.Round(v, 1);
+
+    /// <summary>
+    /// The run's frame time in seconds, taken as the median of step/speed across
+    /// the samples. That ratio is the time a frame took wherever the runner was
+    /// actually moving; a teleport is a huge outlier the median ignores. Used to
+    /// work out how far the speed could carry the runner in one frame.
+    /// </summary>
+    private static double EstimateFrameSeconds(List<Sample> raw)
+    {
+        var dts = new List<double>();
+        for (int i = 1; i < raw.Count; i++)
+        {
+            var speed = raw[i].Speed;
+            if (speed < 1) continue;                 // too slow to time a frame by
+            dts.Add(Distance(raw[i - 1], raw[i]) / speed);
+        }
+        if (dts.Count == 0) return 1.0 / 60;         // nothing to go on; assume 60 Hz
+        dts.Sort();
+        return dts[dts.Count / 2];
+    }
 
     private static double Distance(
         Sample a,

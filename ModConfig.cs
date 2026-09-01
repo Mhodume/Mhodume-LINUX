@@ -162,7 +162,7 @@ public class TrajectoryConfig : ObservableObject
     private bool _gradient = true;
     private double[] _color = { 0.0, 1.0, 0.3, 1.0 };
     private bool _hideGhost;
-    private double _maxDistance = 150;
+    private double _maxDistance = 400;
     private bool _accuracy;
     private double _accWidth = 3;
     private double _accOffsetX;
@@ -579,7 +579,22 @@ public class TweaksConfig : ObservableObject
     [JsonPropertyName("stayOnLevel")]
     public bool StayOnLevel { get => _stayOnLevel; set => Set(ref _stayOnLevel, value); }
 
-    public TweaksConfig Clone() => new() { StayOnLevel = StayOnLevel };
+    // Jump to a level: set GotoLevel, then bump GotoRequest. The mod acts on the
+    // counter changing, and recognises the arrival as its own, so "stay on the
+    // level" does not fight it.
+    private string _gotoLevel = "";
+    private int _gotoRequest;
+
+    [JsonPropertyName("gotoLevel")]
+    public string GotoLevel { get => _gotoLevel; set => Set(ref _gotoLevel, value ?? ""); }
+
+    [JsonPropertyName("gotoRequest")]
+    public int GotoRequest { get => _gotoRequest; set => Set(ref _gotoRequest, value); }
+
+    public TweaksConfig Clone() => new()
+    {
+        StayOnLevel = StayOnLevel, GotoLevel = GotoLevel, GotoRequest = GotoRequest,
+    };
 }
 
 
@@ -589,7 +604,9 @@ public class TweaksConfig : ObservableObject
 /// </summary>
 public class CheckpointsConfig : ObservableObject
 {
-    private bool _enabled;
+    // On by default: the mod binds the placement key at load only when
+    // checkpoints are enabled, so starting off meant no key until a restart.
+    private bool _enabled = true;
     private int _radius = 250;
     private int _height = 600;
     private string _key = "INS";

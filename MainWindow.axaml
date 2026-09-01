@@ -81,12 +81,11 @@
             <Grid Grid.Row="1" x:Name="PageHost">
                 <local:CrosshairPage   x:Name="PageCrosshair" />
                 <local:HudPage         x:Name="PageHud"         IsVisible="False" />
-                <local:MapsPage        x:Name="PageMaps"        IsVisible="False" />
                 <local:CheckpointsPage x:Name="PageCheckpoints" IsVisible="False" />
                 <local:TrajectoryPage  x:Name="PageTrajectory"  IsVisible="False" />
                 <local:FreecamPage     x:Name="PageFreecam"     IsVisible="False" />
-                <local:TrainingPage    x:Name="PageTraining"    IsVisible="False" />
                 <local:TweaksPage      x:Name="PageTweaks"      IsVisible="False" />
+                <local:NpcPage         x:Name="PageNpcs"        IsVisible="False" />
                 <local:ProfilesPage    x:Name="PageProfiles"    IsVisible="False" />
 
                 <!-- About / files, inline (adapted for Linux) -->
