@@ -244,12 +244,23 @@ public partial class MainWindow : Window
     /// </summary>
     private static bool GameRunning()
     {
+        // Match by prefix, not exact name: on Linux a process name is the comm
+        // field, cut to 15 characters, so under Proton "VHOLUME-Win64-Shipping"
+        // shows up as "VHOLUME-Win64-S". Any process starting with VHOLUME is it.
         try
         {
-            return Process.GetProcessesByName("VHOLUME-Win64-Shipping").Length > 0
-                || Process.GetProcessesByName("VHOLUME-Win64-Shipping.exe").Length > 0;
+            foreach (var p in Process.GetProcesses())
+            {
+                try
+                {
+                    if (p.ProcessName.StartsWith("VHOLUME", StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch { /* a process that vanished mid-enumeration */ }
+            }
         }
-        catch { return false; }
+        catch { /* nothing we can do */ }
+        return false;
     }
 
     private void SetStatus(string message, bool ok)

@@ -25,42 +25,40 @@ public static class MhodumePaths
     public const string AppId = "4131730";
 
     /// <summary>
-    /// The Mhodume data folder both sides agree on. Created if missing.
+    /// The Local-AppData base both the app and the mod resolve to: on Windows the
+    /// real one, on Linux the one inside VHOLUME's Proton prefix. Everything the
+    /// game keeps under Local-AppData — the mod's Mhodume folder AND the game's
+    /// own VHOLUME/Saved (save file, ghosts) — hangs off this.
     /// </summary>
+    public static string LocalAppDataBase { get; } = ResolveBase();
+
+    /// <summary>The Mhodume data folder both sides agree on. Created if missing.</summary>
     public static string RootDir { get; } = Resolve();
 
     private static string Resolve()
     {
-        string root = OperatingSystem.IsWindows() ? WindowsRoot() : LinuxRoot();
+        var root = Path.Combine(LocalAppDataBase, "Mhodume");
         try { Directory.CreateDirectory(root); } catch { /* first write will surface it */ }
         return root;
     }
 
-    // ------------------------------------------------------------------ Windows
-    private static string WindowsRoot() => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Mhodume");
-
-    // -------------------------------------------------------------------- Linux
-    /// <summary>
-    /// The Local-AppData path as the mod sees it from inside VHOLUME's Proton
-    /// prefix. Falls back to the native share dir only if no prefix is found —
-    /// the app still runs and edits config, it just will not reach a game that
-    /// has never been launched through Proton yet.
-    /// </summary>
-    private static string LinuxRoot()
+    private static string ResolveBase()
     {
+        if (OperatingSystem.IsWindows())
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Linux: the Local-AppData as the mod sees it from inside the Proton
+        // prefix. Falls back to the native share dir if no prefix is found — the
+        // app still runs and edits config, it just cannot reach a game that has
+        // never been launched through Proton yet.
         var prefix = FindProtonPrefix();
         if (prefix is not null)
-        {
-            return Path.Combine(prefix,
-                "drive_c", "users", "steamuser", "AppData", "Local", "Mhodume");
-        }
+            return Path.Combine(prefix, "drive_c", "users", "steamuser", "AppData", "Local");
 
         var share = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
         if (string.IsNullOrEmpty(share))
             share = Path.Combine(Home(), ".local", "share");
-        return Path.Combine(share, "Mhodume");
+        return share;
     }
 
     /// <summary>Whether we resolved to a real Proton prefix (so config reaches the game).</summary>

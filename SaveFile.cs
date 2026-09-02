@@ -20,7 +20,7 @@ namespace Mhodume;
 public static class SaveFile
 {
     public static string SaveDir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        MhodumePaths.LocalAppDataBase,
         "VHOLUME", "Saved", "SaveGames");
 
     public static string SavePath => Path.Combine(SaveDir, "VHOLUME_Save1.sav");

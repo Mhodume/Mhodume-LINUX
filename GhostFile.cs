@@ -114,7 +114,7 @@ public static class GhostFile
     private const double SimplifyToleranceCm = 20;
 
     public static string GhostsRoot => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        MhodumePaths.LocalAppDataBase,
         "VHOLUME", "Saved", "Ghosts");
 
     // ------------------------------------------------------------- discovery
